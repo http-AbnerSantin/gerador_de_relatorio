@@ -14,10 +14,6 @@ $res = $conn->query($sql);
 $hora = date('H:i:s');
 
 
-
-
-
-
 //condição caso o banco vanh vazio
 if($res->num_rows > 0) {
 
@@ -25,37 +21,34 @@ if($res->num_rows > 0) {
   $html .= "<p>Vendas por Funcionario no periodo de $dataInicial ate $dataFinal</p>";
   $html .= "<p>Hora... $hora</p>";
 
-  
+
   //vendedor
   $sqlVendedor = "SELECT vendedor FROM relatorio GROUP BY vendedor";
+
   $sqlVendedorRes = $conn->query($sqlVendedor);
-  $row;
-  while($row = $sqlVendedorRes->fetch_array()) {
-    $vendedor = $row['vendedor'];
+  $linha;
+  while($linha = $sqlVendedorRes->fetch_array()) {
+    $vendedor = $linha['vendedor'];
+    $html .= '<p>Vendedor: '.$linha['vendedor']. '</p>';
+    $html .= "<tr>";
+    $html .= "<th> DATA </th>";
+    $html .= "<th> PEDIDO </th>";
+    $html .= "<th> VALOR </th>";
+    $html .= "</tr>";
+
     $sqlVendas = "SELECT * FROM relatorio WHERE vendedor = '$vendedor'";
+
     $retorno = $conn->query($sqlVendas);
-    echo 'Vendedor: '.$row['vendedor'];
+
     while($row2 = $retorno->fetch_array()) {
-      
-      echo "<p>Pedido " .$row2['pedido']."</p>";
+      $html .= "<tr>";
+      $html .= "<td>".$row2['data']."</td>";
+      $html .= "<td>".$row2['pedido']."</td>";
+      $html .= "<td>".$row2['valor']."</td>";
+      $html .= "</tr>";
     }
   }
-  //vendedor
 
-  $html .= "<tr>";
-  $html .= "<th> DATA </th>";
-  $html .= "<th> PEDIDO </th>";
-  $html .= "<th> VALOR </th>";
-  
-  $html .= "</tr>";
-  while($row = $res->fetch_object()) {
-    $html .= "<tr>";
-    $html .= "<td>".$row->data."</td>";
-    $html .= "<td>".$row->pedido."</td>";
-    $html .= "<td>".$row->valor."</td>";
-    
-    $html .= "</tr>";
-  }
   $html .= "</table>";
 
 } else {
