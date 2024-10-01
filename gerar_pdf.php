@@ -18,6 +18,19 @@ $hora = date('H:i:s');
 if($res->num_rows > 0) {
 
   $html = "<table style='margin: 0 auto;'>";
+  $html .= "<style>
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
+        .container { width: 100%; margin: 0 auto; }
+        .header, .footer { text-align: center; margin-bottom: 20px; }
+        .header { font-size: 14px; font-weight: bold; border-bottom: 1px solid #000; }
+        .footer { font-size: 10px; margin-top: 40px; border-top: 1px solid #000; padding-top: 10px; }
+        .content { margin-top: 20px; }
+        .content h2 { font-size: 16px; text-align: center; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 2px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+    </style>";
   $html .= "<p>Vendas por Funcionario no periodo de $dataInicial ate $dataFinal</p>";
   $html .= "<p>Hora... $hora</p>";
 
