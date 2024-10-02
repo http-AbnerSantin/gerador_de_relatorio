@@ -3,40 +3,43 @@
 include('config.php');
 date_default_timezone_set('America/Sao_Paulo');
 
+//pegando as datas
 $dataInicial = $_POST["dataInicial"];
 $dataFinal = $_POST["dataFinal"];
 
-//WHERE `data` BETWEEN '$dataInicial' AND '$dataFinal'
-$sql = "SELECT * FROM relatorio2 WHERE `data` BETWEEN '$dataInicial' AND '$dataFinal'";
-// $sql = "SELECT * FROM relatorio2 WHERE `data` BETWEEN '2020-09-30' AND '2020-10-01'";
+//Data no formato DD-MM-YYYY
+$dataInicialConverter = $_POST['dataInicial'];
+$dataFinalConverter = $_POST['dataFinal'];
 
+$data_inicial_formatada = DateTime::createFromFormat('Y-m-d', $dataInicialConverter)->format('d/m/Y');
+$data_final_formatada = DateTime::createFromFormat('Y-m-d', $dataFinalConverter)->format('d/m/Y');
+
+//selecionando o relatorio de acordo com as datas definidas
+$sql = "SELECT * FROM relatorio2 WHERE `data` BETWEEN '$dataInicial' AND '$dataFinal'";
 $res = $conn->query($sql);
 
 //horario da emissão do relatório
 $hora = date('H:i:s');
 $empresa = "CANINANA & RIBEIRO LTDA";
+$dataDeEmissao = date('d,m,Y');
 
 $html="";
 
-//condição caso o banco vanh vazio
+//condição caso o banco venha vazio
 if($res->num_rows > 0) {
 
   $html = "<style>
   body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
-  .container { width: 100%; margin: 0 auto; }
-  .header, .footer { text-align: center; margin-bottom: 20px; }
-  .header { font-size: 14px; font-weight: bold; border-bottom: 1px solid #000; }
-  .footer { font-size: 10px; margin-top: 40px; border-top: 1px solid #000; padding-top: 10px; }
-  .content { margin-top: 20px; }
-  .content h2 { font-size: 16px; text-align: center; margin-bottom: 20px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-  th, td { padding: 2px; border: 1px solid #ddd; text-align: left; }
+  table { width: 100%;  margin-bottom: 20px; }
+  th, td { padding: 3px;  text-align: left; }
   th { background-color: #f2f2f2; font-weight: bold; }
-  .error { color: red; font-weight: bold; }
   </style>";
   //cabeçalho
   $html .= "<h3>$empresa</h3>";
-  $html .= "<p>Vendas por Funcionario no periodo de $dataInicial ate $dataFinal</p>";
+  $html .= "<div>";
+  $html .= "<p>Vendas por Funcionario no periodo de $data_inicial_formatada ate $data_final_formatada</p>";
+  $html .= "<p>Data Emitida $dataDeEmissao</p>";
+  $html .= "</div>";
   $html .= "<p>Hora... $hora</p>";
   
   
@@ -62,24 +65,43 @@ if($res->num_rows > 0) {
 
   
     while($row2 = $retorno->fetch_array()) {
+
+      $data_correta = DateTime::createFromFormat('Y-m-d', $row2['DATA'])->format('d/m/Y');
+
       $html .= "<tr>";
-      $html .= "<td>".$row2['DATA']."</td>";
+      $html .= "<td>".$data_correta."</td>";
       $html .= "<td>".$row2['NUMERO']."</td>";
       $html .= "<td>".$row2['TOTAL']."</td>";
       $html .= "<td>".$row2['PERDE_GANHA']."</td>";
       $html .= "</tr>";
+
     }
+    $sqlTotalPorVendedor = "SELECT SUM(TOTAL), SUM(PERDE_GANHA) FROM relatorio2 WHERE FUNCIONARIO = '$vendedor' AND `data` BETWEEN '$dataInicial' AND '$dataFinal'";
+    $sqlTotalPorVendedorRes = $conn->query($sqlTotalPorVendedor);
+    
+    $resposta = $sqlTotalPorVendedorRes->fetch_array();
+
+    // $html .= "<tr>";
+    // $html .= "<th colspan='5' style='text-align: center;'>TOTAL DE VENDAS </th>";
+    // $html .= "</tr>";
+    $html .= "<tr>";
+    $html .= "<td colspan='2' > <span style='font-weight: bold;'>TOTAL DE VENDAS: </span> R$ ".$resposta[0]."</td>";
+    $html .= "<td colspan='2' > <span style='font-weight: bold;'>PERDE/GANHA: </span> R$ ".$resposta[1]."</td>";
+    $html .= "</tr>";
   }
-  $sqlSomaTotal = "SELECT SUM(TOTAL) FROM relatorio2 WHERE `DATA` BETWEEN '$dataInicial' AND '$dataFinal'";
-  // $sqlSomaTotal = "SELECT SUM(TOTAL) FROM relatorio2 WHERE `DATA` BETWEEN '2020-09-30' AND '2020-10-01'";
+
+  //VALOR TOTAL DE VENDAS DO RELATORIO
+  $sqlSomaTotal = "SELECT SUM(TOTAL), SUM(PERDE_GANHA) FROM relatorio2 WHERE `DATA` BETWEEN '$dataInicial' AND '$dataFinal'";
   $sqlSomaTotalRes = $conn->query($sqlSomaTotal);
 
   $row3 = $sqlSomaTotalRes->fetch_array();
     $html .= "<tr>";
-    $html .= "<th> Total Geral </th>";
+    $html .= "<th colspan='2'> TOTAL GERAL </th>";
+    $html .= "<th colspan='2'> PERDE/GANHA </th>";
     $html .= "</tr>";
     $html .= "<tr>";
-    $html .="<td>R$".$row3[0]."</td>";
+    $html .="<td colspan='2'>R$".$row3[0]."</td>";
+    $html .="<td colspan='2'>R$".$row3[1]."</td>";
     $html .="</tr>";
   
   $html .= "</table>";
@@ -87,9 +109,6 @@ if($res->num_rows > 0) {
 } else {
   $html .= "Nenhum dado encontrado";
 }
-
-
-
 
 // echo $html;
 use Dompdf\Dompdf;
