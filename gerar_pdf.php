@@ -21,8 +21,8 @@ $res = $conn->query($sql);
 //horario da emissão do relatório
 $hora = date('H:i:s');
 $empresa = "CANINANA & RIBEIRO LTDA";
-$dataDeEmissao = date('d,m,Y');
-
+$dataDeEmissao = date('d/m/Y');
+$dataEmissaoParaONomeDoArquivo= date('d-m-Y');
 $html="";
 
 //condição caso o banco venha vazio
@@ -123,4 +123,4 @@ $dompdf->setPaper('A4', 'portrait');
 
 $dompdf->render();
 
-$dompdf->stream('relatorio.pdf', array("Attachment" => false));
+$dompdf->stream('relatorio'.$dataEmissaoParaONomeDoArquivo.'.pdf', array("Attachment" => false));
