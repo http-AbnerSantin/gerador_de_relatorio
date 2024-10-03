@@ -35,12 +35,12 @@ if($res->num_rows > 0) {
   th { background-color: #f2f2f2; font-weight: bold; }
   </style>";
   //cabeçalho
-  $html .= "<h3>$empresa</h3>";
-  $html .= "<div>";
-  $html .= "<p>Vendas por Funcionario no periodo de $data_inicial_formatada ate $data_final_formatada</p>";
-  $html .= "<p>Data Emitida $dataDeEmissao</p>";
-  $html .= "</div>";
-  $html .= "<p>Hora... $hora</p>";
+  $html .= "
+    <h3>$empresa</h3>
+    <p>Vendas por Funcionario no periodo de $data_inicial_formatada ate $data_final_formatada</p>
+    <p>Data Emitida $dataDeEmissao</p>
+    <p>Hora... $hora</p>
+    ";
   
   
   $html .= "<table style='margin: 0 auto;'>";
@@ -48,19 +48,21 @@ if($res->num_rows > 0) {
   $sqlVendedor = "SELECT FUNCIONARIO FROM relatorio2 GROUP BY FUNCIONARIO";
   
   $sqlVendedorRes = $conn->query($sqlVendedor);
+
   
   while($linha = $sqlVendedorRes->fetch_array()) {
     $vendedor = $linha['FUNCIONARIO'];
-    $html .= '<p>Vendedor: '.$vendedor. '</p>';
-    $html .= "<tr>";
-    $html .= "<th> DATA </th>";
-    $html .= "<th> PEDIDO </th>";
-    $html .= "<th> VALOR </th>";
-    $html .= "<th> PERDE/GANHA </th>";
-    $html .= "</tr>";
+    $html .= "
+      <p>Vendedor: $vendedor</p>
+      <tr>
+        <th> DATA </th>
+        <th> PEDIDO </th>
+        <th> VALOR </th>
+        <th> PERDE/GANHA </th>
+      </tr>
+    ";
 
     $sqlVendas = "SELECT * FROM relatorio2 WHERE FUNCIONARIO = '$vendedor' AND `data` BETWEEN '$dataInicial' AND '$dataFinal'";
-    // $sqlVendas = "SELECT * FROM relatorio2 WHERE FUNCIONARIO = '$vendedor' AND `data` BETWEEN '2020-09-30' AND '2020-10-01'";
     $retorno = $conn->query($sqlVendas);
 
   
@@ -68,12 +70,14 @@ if($res->num_rows > 0) {
 
       $data_correta = DateTime::createFromFormat('Y-m-d', $row2['DATA'])->format('d/m/Y');
 
-      $html .= "<tr>";
-      $html .= "<td>".$data_correta."</td>";
-      $html .= "<td>".$row2['NUMERO']."</td>";
-      $html .= "<td>".$row2['TOTAL']."</td>";
-      $html .= "<td>".$row2['PERDE_GANHA']."</td>";
-      $html .= "</tr>";
+      $html .= "
+      <tr>
+        <td>".$data_correta."</td>
+        <td>".$row2['NUMERO']."</td>
+        <td>".$row2['TOTAL']."</td>
+        <td>".$row2['PERDE_GANHA']."</td>
+      </tr>
+      ";
 
     }
     $sqlTotalPorVendedor = "SELECT SUM(TOTAL), SUM(PERDE_GANHA) FROM relatorio2 WHERE FUNCIONARIO = '$vendedor' AND `data` BETWEEN '$dataInicial' AND '$dataFinal'";
@@ -81,13 +85,12 @@ if($res->num_rows > 0) {
     
     $resposta = $sqlTotalPorVendedorRes->fetch_array();
 
-    // $html .= "<tr>";
-    // $html .= "<th colspan='5' style='text-align: center;'>TOTAL DE VENDAS </th>";
-    // $html .= "</tr>";
-    $html .= "<tr>";
-    $html .= "<td colspan='2' > <span style='font-weight: bold;'>TOTAL DE VENDAS: </span> R$ ".$resposta[0]."</td>";
-    $html .= "<td colspan='2' > <span style='font-weight: bold;'>PERDE/GANHA: </span> R$ ".$resposta[1]."</td>";
-    $html .= "</tr>";
+    $html .= "
+    <tr>
+      <td colspan='2' > <span style='font-weight: bold;'>TOTAL DE VENDAS: </span> R$ ".$resposta[0]."</td>
+      <td colspan='2' > <span style='font-weight: bold;'>PERDE/GANHA: </span> R$ ".$resposta[1]."</td>
+    </tr>
+    ";
   }
 
   //VALOR TOTAL DE VENDAS DO RELATORIO
@@ -95,14 +98,14 @@ if($res->num_rows > 0) {
   $sqlSomaTotalRes = $conn->query($sqlSomaTotal);
 
   $row3 = $sqlSomaTotalRes->fetch_array();
-    $html .= "<tr>";
-    $html .= "<th colspan='2'> TOTAL GERAL </th>";
-    $html .= "<th colspan='2'> PERDE/GANHA </th>";
-    $html .= "</tr>";
-    $html .= "<tr>";
-    $html .="<td colspan='2'>R$".$row3[0]."</td>";
-    $html .="<td colspan='2'>R$".$row3[1]."</td>";
-    $html .="</tr>";
+    $html .= "<tr>
+    <th colspan='2'> TOTAL GERAL </th>
+    <th colspan='2'> PERDE/GANHA </th>
+    </tr>
+    <td colspan='2'>R$".$row3[0]."</td>
+    <td colspan='2'>R$".$row3[1]."</td>
+    </tr>
+    ";
   
   $html .= "</table>";
 
@@ -110,7 +113,7 @@ if($res->num_rows > 0) {
   $html .= "Nenhum dado encontrado";
 }
 
-// echo $html;
+
 use Dompdf\Dompdf;
 
 require_once 'dompdf/autoload.inc.php';
